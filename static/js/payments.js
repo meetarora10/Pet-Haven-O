@@ -101,12 +101,26 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Expiry date validation
+
         const expiryPattern = /^(0[1-9]|1[0-2])\/([0-9]{2})$/;
         if (!expiryPattern.test(expiryDate.value)) {
             expiryError.textContent = 'Please enter a valid expiry date (MM/YY)';
             isValid = false;
         } else {
-            expiryError.textContent = '';
+            const [month, year] = expiryDate.value.split('/');
+            const currentDate = new Date();
+            const currentMonth = currentDate.getMonth() + 1;
+            const currentYear = currentDate.getFullYear() % 100;
+            
+            const inputMonth = parseInt(month, 10);
+            const inputYear = parseInt(year, 10);
+            
+            if (inputYear < currentYear || (inputYear === currentYear && inputMonth < currentMonth)) {
+                expiryError.textContent = 'Card has expired';
+                isValid = false;
+            } else {
+                expiryError.textContent = '';
+            }
         }
 
         // CVV validation
@@ -126,6 +140,43 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         return isValid;
+    }
+
+    // Format card number with spaces
+    function formatCardNumber(input) {
+        input.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '');
+            if (value.length > 16) {
+                value = value.substr(0, 16);
+            }
+            if (value.length > 0) {
+                const parts = value.match(/.{1,4}/g);
+                e.target.value = parts.join(' ');
+            } else {
+                e.target.value = value;
+            }
+        });
+    }
+
+    // Format expiry date
+    function formatExpiryDate(input) {
+        input.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 4) {
+                value = value.substr(0, 4);
+            }
+            if (value.length >= 2) {
+                let month = parseInt(value.substr(0, 2));
+                if (month > 12) month = 12;
+                if (month < 1) month = '01';
+                month = month.toString().padStart(2, '0');
+                value = month + value.substr(2);
+            }
+            if (value.length > 2) {
+                value = value.substr(0, 2) + '/' + value.substr(2);
+            }
+            e.target.value = value;
+        });
     }
 
     function getPaymentData(paymentMethod) {
@@ -150,4 +201,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         return data;
     }
+    ['CardNumber', 'debitCardNumber'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) formatCardNumber(element);
+    });
+
+    ['ExpiryDate', 'debitExpiryDate'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) formatExpiryDate(element);
+    });
 });
