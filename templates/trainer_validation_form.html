@@ -129,17 +129,17 @@
 
         <form action="{{ url_for('submit_trainer_info') }}" method="POST" enctype="multipart/form-data" onsubmit="validateForm(event)">
             <section>
-                <h2>1. Full Name of Trainer</h2>
+                <h2>1. Full Name of Trainer *</h2>
                 <input type="text" name="full_name" placeholder="Enter full name" required oninput="validateName(this)">
                 <span class="error-message" style="display:none; color: red;"></span>
             </section>
 
             <section>
                 <h2>2. Contact Information</h2>
-                <label>Phone Number:</label>
+                <label>Phone Number: *</label>
                 <input type="tel" name="phone_number" placeholder="Enter phone number" required oninput="validatePhoneNumber(this)" pattern="[0-9]{10}">
                 <span class="error-message" style="display:none; color: red;"></span>
-                <label>Email Address:</label>
+                <label>Email Address: *</label>
                 <input type="email" name="email" placeholder="Enter email address" required oninput="validateEmail(this)">
                 <span class="error-message" style="display:none; color: red;"></span>
                 <label>Website (if applicable):</label>
@@ -147,18 +147,18 @@
             </section>
 
             <section>
-                <h2>3. Government Id</h2>
-                <label>Government ID Type:</label>
+                <h2>3. Government Id *</h2>
+                <label>Government ID Type: *</label>
                 <select name="government_id_type" required>
                     <option value="passport">Passport</option>
                     <option value="driver_license">Driver's License</option>
                     <option value="national_id">Aadhaar</option>
                 </select>
                 <span class="error-message" style="display:none; color: red;"></span>
-                <label>Government ID Number:</label>
+                <label>Government ID Number: *</label>
                 <input type="text" name="government_id_number" placeholder="Enter government ID number" required>
                 <span class="error-message" style="display:none; color: red;"></span>
-                <label>Upload Government ID:</label>
+                <label>Upload Government ID: *</label>
                 <input type="file" name="government_id" accept="application/pdf" required onchange="validateFileSize(this)">
                 <span class="error-message" style="display:none; color: red;"></span>
             </section>
@@ -192,14 +192,14 @@
             </section>
 
             <section>
-                <h2>6. Years of Experience in Pet Training</h2>
+                <h2>6. Years of Experience in Pet Training *</h2>
                 <input type="number" name="experience_years" placeholder="Enter years of experience" required>
                 <span class="error-message" style="display:none; color: red;"></span>
             </section>
 
             <section>
                 <h2>7. Specialization(s)</h2>
-                <label>Specific Species:</label>
+                <label>Specific Species: *</label>
                 <input type="text" name="species" placeholder="E.g., dogs, cats, exotic pets" required>
                 <label>Specific Behavioral Issues:</label>
                 <input type="text" name="behavioral_issues" placeholder="E.g., aggression, anxiety">
@@ -207,7 +207,7 @@
             </section>
 
             <section>
-                <h2>8. Training Philosophy</h2>
+                <h2>8. Training Philosophy *</h2>
                 <textarea name="training_philosophy" placeholder="Describe your training methods" required></textarea>
                 <span class="error-message" style="display:none; color: red;"></span>
             </section>
@@ -270,11 +270,11 @@
 
             <section>
                 <h2>18. Availability and Pricing</h2>
-                <label>Hours of Operation:</label>
-                <input type="text" name="hours_of_operation" placeholder="Enter hours" required>
+                <label>Hours of Operation: *</label>
+                <input type="integer" name="hours_of_operation" placeholder="Enter hours" required>
                 <span class="error-message" style="display:none; color: red;"></span>
-                <label>Session Fees:</label>
-                <input type="text" name="session_fees" placeholder="Enter fees" required>
+                <label>Session Fees: *</label>
+                <input type="integer" name="session_fees" placeholder="Enter fees" required>
                 <span class="error-message" style="display:none; color: red;"></span>
             </section>
 
