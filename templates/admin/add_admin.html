@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Admin</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #388e3c;
+        }
+
+        label {
+            font-weight: bold;
+            color: #388e3c;
+        }
+
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            transition: border 0.3s ease;
+        }
+
+        input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
+            border-color: #2e7d32;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #2e7d32;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #1b5e20;
+        }
+
+        .error {
+            color: #d32f2f;
+            font-size: 13px;
+            margin-top: 5px;
+            font-style: italic;
+            opacity: 0;
+            animation: fadeInError 0.5s forwards;
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .error.show {
+            opacity: 1;
+        }
+
+        /* Animation for the fade-in effect */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInError {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        a {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            text-decoration: none;
+            background-color: #2e7d32;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        a:hover {
+            background-color: #1b5e20;
+        }
+
+    </style>
+    <script>
+        function validateForm() {
+            // Clear previous error messages
+            document.getElementById("name-error").innerHTML = '';
+            document.getElementById("email-error").innerHTML = '';
+            document.getElementById("number-error").innerHTML = '';
+            document.getElementById("password-error").innerHTML = '';
+
+            let valid = true;
+
+            const name = document.forms["adminForm"]["name"].value;
+            const email = document.forms["adminForm"]["email"].value;
+            const number = document.forms["adminForm"]["number"].value;
+            const password = document.forms["adminForm"]["password"].value;
+
+            if (!name) {
+                document.getElementById("name-error").innerHTML = "Name is required.<br>";
+                document.getElementById("name-error").classList.add("show");
+                valid = false;
+            }
+            if (!email) {
+                document.getElementById("email-error").innerHTML = "Email is required.<br>";
+                document.getElementById("email-error").classList.add("show");
+                valid = false;
+            } else if (!validateEmail(email)) {
+                document.getElementById("email-error").innerHTML = "Invalid email format.<br>Example: text@domain.com<br>";
+                document.getElementById("email-error").classList.add("show");
+                valid = false;
+            }
+            if (!number) {
+                document.getElementById("number-error").innerHTML = "Mobile number is required.<br>";
+                document.getElementById("number-error").classList.add("show");
+                valid = false;
+            } else if (!validateNumber(number)) {
+                document.getElementById("number-error").innerHTML = "Invalid mobile number format.<br>Mobile number must be 10 digits long.<br>Example: 1234567890<br>";
+                document.getElementById("number-error").classList.add("show");
+                valid = false;
+            }
+            if (!password) {
+                document.getElementById("password-error").innerHTML = "Password is required.<br>";
+                document.getElementById("password-error").classList.add("show");
+                valid = false;
+            } else if (password.length < 8) {
+                document.getElementById("password-error").innerHTML = "Password must be at least 8 characters long.<br>";
+                document.getElementById("password-error").classList.add("show");
+                valid = false;
+            }
+            return valid;
+        }
+
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function validateNumber(number) {
+            const re = /^\d{10}$/;
+            return re.test(number);
+        }
+    </script>
+</head>
+<body>
+    <a href="/admin_dashboard">&larr; Back to Dashboard</a>
+    <div class="container">
+        <h2>Add Admin</h2>
+        <div class="message">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <p class="{{ category }}">{{ message }}</p>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        <form name="adminForm" action="/add_admin" method="POST" onsubmit="return validateForm()">
+            <label for="name">Name</label>
+            <input type="text" name="name" placeholder="Name">
+            <span id="name-error" class="error"></span>
+
+            <label for="email">Email</label>
+            <input type="email" name="email" placeholder="Email">
+            <span id="email-error" class="error"></span>
+
+            <label for="number">Mobile Number</label>
+            <input type="text" name="number" placeholder="Mobile Number">
+            <span id="number-error" class="error"></span>
+
+            <label for="password">Password</label>
+            <input type="password" name="password" placeholder="Password">
+            <span id="password-error" class="error"></span>
+
+            <button type="submit">Add Admin</button>
+        </form>
+    </div>
+</body>
+</html>

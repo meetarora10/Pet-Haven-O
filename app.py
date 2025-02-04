@@ -1941,52 +1941,14 @@ def payment_success():
 
     return jsonify({"message": "Notification sent!"}), 200
 
-#-------------------------------------
-#-------------------------------------------
-# Routes for Admin
-# #route of admin
-# @app.route('/admin3')
-# def admin3():
-#     try:
-#         pending_requests = TrainerEditRequest.query.filter_by(status='pending').all()
-#         services = Service.query.order_by(Service.created_at.desc()).all()
-#         return render_template('admin3.html', services=services, pending_requests=pending_requests)
-#     except Exception as e:
-#         logger.error(f"Error fetching data for admin panel: {str(e)}")
-#         flash('Error loading admin panel', 'error')
-#         return render_template('admin3.html', services=[], pending_requests=[])
+@app.route('/payment-failure', methods=['POST'])
+def payment_failure():
+    data = request.json
+    msg = Message("Payment Failure", recipients=[data['customer_email']])
+    msg.body = f"Dear {data['customer_name']},\n\nYour payment of {data['amount']/100} INR failed. Please try again.\n\nBest Regards,\nDog Spa Team"
+    mail.send(msg)
 
-# @app.route('/approve/<int:request_id>', methods=['POST'])
-# def approve_request(request_id):
-#     edit_request = TrainerEditRequest.query.get_or_404(request_id)
-#     trainer = Trainer.query.get_or_404(edit_request.trainer_id)
-
-#     # Apply the approved changes to the Trainer
-#     trainer.tname = edit_request.tname
-#     trainer.experience = edit_request.experience
-#     trainer.rating = edit_request.rating
-#     trainer.description = edit_request.description
-#     trainer.profile_pic = edit_request.profile_pic
-#     trainer.status = 'approved'
-
-#     # Delete the request after approval
-#     db.session.delete(edit_request)
-#     db.session.commit()
-
-#     flash("Trainer profile updated successfully!", "success")
-#     return redirect(url_for('admin3'))
-
-# @app.route('/admin3/reject/<int:request_id>', methods=['POST'])
-# def reject_request(request_id):
-#     edit_request = TrainerEditRequest.query.get_or_404(request_id)
-
-#     # Mark the request as rejected and delete it
-#     edit_request.status = 'rejected'
-#     db.session.delete(edit_request)
-#     db.session.commit()
-
-#     flash("Trainer edit request rejected.", "error")
-#     return redirect(url_for('admin3'))
+    return jsonify({"message": "Notification sent!"}), 200
 
 @app.route('/add_services', methods=['GET', 'POST'])
 def add_services():
@@ -2547,6 +2509,72 @@ def session_details():
 
     return render_template('session_details.html', sessions=sessions, trainer=trainer)
 
+
+@app.route('/add_admin', methods=['GET', 'POST'])
+@login_required
+def add_admin():
+    if current_user.role != 'admin':
+        flash('You do not have permission to access this page.', 'danger')
+        return redirect(url_for('home'))
+
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        number = request.form['number']
+        password = request.form['password']
+
+        if not all([name, email, number, password]):
+            flash('All fields are required.', 'danger')
+            return redirect(url_for('add_admin'))
+
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            flash('Email already exists. Please use a different email.', 'danger')
+            return redirect(url_for('add_admin'))
+        
+        existing_user = User.query.filter_by(mobile_number=number).first()
+        if existing_user:
+            flash('Mobile number already exists. Please use a different number.', 'danger')
+            return redirect(url_for('add_admin'))
+
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+        new_admin = User(
+            name=name,
+            email=email,
+            mobile_number=number,
+            password=hashed_password,
+            role='admin'
+        )
+        db.session.add(new_admin)
+        db.session.commit()
+
+        # Send email to the new admin
+        try:
+            msg = Message(
+                "Admin Account Created",
+                sender=app.config['MAIL_USERNAME'],
+                recipients=[email]
+            )
+            msg.body = f"Dear {name},\n\nYour admin account has been created successfully.\n Your account email:- {email} \n pasword={password}.\n\nBest Regards,\nPet Haven Team"
+            mail.send(msg)
+        except Exception as e:
+            app.logger.error(f"Failed to send Admin Account email: {str(e)}")
+            flash('Admin Account email could not be sent. Please check your inbox later.', 'warning')
+
+        # Notify admin about the new admin addition
+        notification_message = f"New admin added: {new_admin.name} ({new_admin.email})"
+        new_notification = Notification(
+            message=notification_message,
+            user_id=new_admin.id
+        )
+        db.session.add(new_notification)
+        db.session.commit()
+        socketio.emit('new_notification', {'message': notification_message, 'created_at': datetime.utcnow().isoformat()})
+
+        flash('New admin added successfully!', 'success')
+        return redirect(url_for('admin_dashboard'))
+
+    return render_template('admin/add_admin.html')
 
 # Run the app
 if __name__ == '__main__':
